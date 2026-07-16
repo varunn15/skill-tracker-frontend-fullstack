@@ -3,11 +3,11 @@ import { toast } from "react-toastify";
 import { deleteSkill } from "../services/api";
 import "./SkillList.css";
 
-function SkillList({ skills, loading, onEdit, onDelete }) {
+function SkillList({ skills, loading, error, onEdit, onDelete, onRetry }) {
   const [deletingId, setDeletingId] = useState(null);
 
   const handleDelete = async (id) => {
-    // Confirmation before deleting
+    // ✅ Confirmation before deleting
     if (!window.confirm("Are you sure you want to delete this skill?")) {
       return;
     }
@@ -45,12 +45,27 @@ function SkillList({ skills, loading, onEdit, onDelete }) {
     return emojis[level] || '📚';
   };
 
+  // ✅ Handle Loading State
   if (loading) {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
         <p className="loading-text">Loading your skills...</p>
         <p className="loading-subtext">Please wait a moment</p>
+      </div>
+    );
+  }
+
+  // ✅ Handle Error State
+  if (error) {
+    return (
+      <div className="error-container">
+        <div className="error-icon-large">🔌</div>
+        <h3 className="error-title">Connection Error</h3>
+        <p className="error-description">{error}</p>
+        <button className="error-retry-button" onClick={onRetry}>
+          🔄 Try Again
+        </button>
       </div>
     );
   }
