@@ -7,6 +7,11 @@ function SkillList({ skills, loading, onEdit, onDelete }) {
   const [deletingId, setDeletingId] = useState(null);
 
   const handleDelete = async (id) => {
+    // Confirmation before deleting
+    if (!window.confirm("Are you sure you want to delete this skill?")) {
+      return;
+    }
+
     setDeletingId(id);
     try {
       await deleteSkill(id);
