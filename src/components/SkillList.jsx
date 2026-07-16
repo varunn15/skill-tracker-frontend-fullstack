@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { deleteSkill } from "../services/api";
+import ErrorState from "./ErrorState"; // ✅ Import
 import "./SkillList.css";
 
 function SkillList({ skills, loading, error, onEdit, onDelete, onRetry }) {
   const [deletingId, setDeletingId] = useState(null);
 
   const handleDelete = async (id) => {
-    // ✅ Confirmation before deleting
     if (!window.confirm("Are you sure you want to delete this skill?")) {
       return;
     }
@@ -18,8 +18,7 @@ function SkillList({ skills, loading, error, onEdit, onDelete, onRetry }) {
       toast.success("✅ Skill deleted successfully!");
       onDelete();
     } catch (err) {
-      console.error("Error deleting skill:", err);
-      toast.error("❌ Error deleting skill. Please try again.");
+      // Error is handled by interceptor
     } finally {
       setDeletingId(null);
     }
@@ -45,7 +44,6 @@ function SkillList({ skills, loading, error, onEdit, onDelete, onRetry }) {
     return emojis[level] || '📚';
   };
 
-  // ✅ Handle Loading State
   if (loading) {
     return (
       <div className="loading-container">
@@ -56,17 +54,16 @@ function SkillList({ skills, loading, error, onEdit, onDelete, onRetry }) {
     );
   }
 
-  // ✅ Handle Error State
+  // ✅ Use ErrorState component
   if (error) {
     return (
-      <div className="error-container">
-        <div className="error-icon-large">🔌</div>
-        <h3 className="error-title">Connection Error</h3>
-        <p className="error-description">{error}</p>
-        <button className="error-retry-button" onClick={onRetry}>
-          🔄 Try Again
-        </button>
-      </div>
+      <ErrorState
+        title="Connection Error"
+        message={error}
+        onRetry={onRetry}
+        icon="🔌"
+        retryText="Retry"
+      />
     );
   }
 
@@ -98,7 +95,6 @@ function SkillList({ skills, loading, error, onEdit, onDelete, onRetry }) {
                   <button 
                     onClick={() => onEdit(skill)} 
                     className="btn-action btn-edit"
-                    title="Edit skill"
                     disabled={deletingId === skill._id}
                   >
                     ✏️ Edit
@@ -106,7 +102,6 @@ function SkillList({ skills, loading, error, onEdit, onDelete, onRetry }) {
                   <button 
                     onClick={() => handleDelete(skill._id)} 
                     className="btn-action btn-delete"
-                    title="Delete skill"
                     disabled={deletingId === skill._id}
                   >
                     {deletingId === skill._id ? (

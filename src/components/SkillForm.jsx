@@ -13,16 +13,12 @@ function SkillForm({ onSkillAdded, editingSkill, onUpdateDone, isSubmitting, set
     if (editingSkill) {
       setName(editingSkill.name);
       setLevel(editingSkill.level);
-      // Clear errors when editing
       setErrors({});
     }
   }, [editingSkill]);
 
-  // ✅ Validation function
   const validate = () => {
     let newErrors = {};
-    
-    // Name validation
     if (!name || name.trim() === "") {
       newErrors.name = "Skill name is required";
     } else if (name.trim().length < 2) {
@@ -30,27 +26,20 @@ function SkillForm({ onSkillAdded, editingSkill, onUpdateDone, isSubmitting, set
     } else if (name.trim().length > 100) {
       newErrors.name = "Skill name must be less than 100 characters";
     }
-
-    // Level validation
     if (!level) {
       newErrors.level = "Please select a skill level";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // ✅ Handle field blur for validation
   const handleBlur = (field) => {
     setTouched({ ...touched, [field]: true });
   };
 
-  // ✅ Handle field change with real-time validation
   const handleNameChange = (e) => {
     const value = e.target.value;
     setName(value);
-    
-    // Clear error while typing
     if (errors.name && value.trim() !== "") {
       setErrors({ ...errors, name: "" });
     }
@@ -59,8 +48,6 @@ function SkillForm({ onSkillAdded, editingSkill, onUpdateDone, isSubmitting, set
   const handleLevelChange = (e) => {
     const value = e.target.value;
     setLevel(value);
-    
-    // Clear error while selecting
     if (errors.level && value) {
       setErrors({ ...errors, level: "" });
     }
@@ -68,11 +55,8 @@ function SkillForm({ onSkillAdded, editingSkill, onUpdateDone, isSubmitting, set
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Mark all fields as touched
     setTouched({ name: true, level: true });
 
-    // ✅ Validate before submitting
     if (!validate()) {
       toast.error("Please fix the errors before submitting");
       return;
@@ -80,37 +64,34 @@ function SkillForm({ onSkillAdded, editingSkill, onUpdateDone, isSubmitting, set
 
     setIsSubmitting(true);
 
-    try {
-      const skillData = { 
-        name: name.trim(), 
-        level 
-      };
+    // ✅ OPTIMISTIC UI: Create temporary skill
+    const skillData = { name: name.trim(), level };
+    const tempId = `temp-${Date.now()}`;
+    const tempSkill = { ...skillData, _id: tempId };
 
+    // ✅ Update parent immediately (if parent supports it)
+    // For now, we'll just show loading state
+
+    try {
       if (editingSkill) {
         await updateSkill(editingSkill._id, skillData);
         toast.success("✅ Skill updated successfully!");
         if (onUpdateDone) onUpdateDone();
       } else {
-        await createSkill(skillData);
+        const response = await createSkill(skillData);
         toast.success("✅ Skill added successfully!");
+        if (onSkillAdded) onSkillAdded();
       }
 
-      // Reset form
       setName("");
       setLevel("");
       setErrors({});
       setTouched({});
 
-      if (onSkillAdded) onSkillAdded();
     } catch (err) {
+      // Error is handled by interceptor
+      // ✅ Rollback optimistic update would go here
       console.error("Error saving skill:", err);
-      
-      // Handle backend validation errors
-      if (err.response && err.response.data && err.response.data.error) {
-        toast.error(`❌ ${err.response.data.error}`);
-      } else {
-        toast.error("❌ Error saving skill. Please try again.");
-      }
     } finally {
       setIsSubmitting(false);
     }

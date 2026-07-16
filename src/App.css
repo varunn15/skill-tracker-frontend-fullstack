@@ -214,3 +214,42 @@ body {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+.offline-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px 20px;
+  margin: 0 20px 20px 20px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.offline-icon {
+  font-size: 20px;
+}
+
+.offline-text {
+  flex: 1;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+.offline-retry-btn {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.offline-retry-btn:hover {
+  background-color: #b91c1c;
+}
