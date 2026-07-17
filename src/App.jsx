@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import SkillList from "./components/SkillList";
 import SkillForm from "./components/SkillForm";
+import ThemeToggle from "./components/ThemeToggle";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getSkills } from "./services/api";
-import useNetworkStatus from "./hooks/useNetworkStatus"; // ✅ Import
-import "./App.css";
+import { SparklesIcon, PlusCircleIcon, ChartBarIcon } from "@heroicons/react/24/outline";
 
 function App() {
   const [skills, setSkills] = useState([]);
@@ -13,18 +13,10 @@ function App() {
   const [error, setError] = useState("");
   const [editingSkill, setEditingSkill] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // ✅ Network status
-  const isOnline = useNetworkStatus();
+  const [toastTheme, setToastTheme] = useState(
+  document.documentElement.classList.contains('dark') ? 'dark' : 'light');
 
   const fetchSkills = async () => {
-    // ✅ Check network status
-    if (!isOnline) {
-      setError("You are offline. Please check your internet connection.");
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
       setError("");
@@ -39,7 +31,7 @@ function App() {
 
   useEffect(() => {
     fetchSkills();
-  }, [isOnline]); // ✅ Refetch when network comes back
+  }, []);
 
   const handleSkillAdded = () => fetchSkills();
   const handleEdit = (skill) => setEditingSkill(skill);
@@ -49,78 +41,95 @@ function App() {
   };
   const handleDelete = () => fetchSkills();
 
-  // ✅ Show offline banner
-  if (!isOnline) {
-    return (
-      <div className="app">
-        <div className="app-header">
-          <h1>🎯 Skill Tracker</h1>
-          <p className="subtitle">Manage your skills and track your progress</p>
-        </div>
-        <div className="offline-banner">
-          <span className="offline-icon">📡</span>
-          <span className="offline-text">You are offline. Please check your internet connection.</span>
-          <button className="offline-retry-btn" onClick={fetchSkills}>
-            🔄 Retry
-          </button>
-        </div>
-        <div className="app-content">
-          <div className="form-section">
-            <SkillForm
-              onSkillAdded={handleSkillAdded}
-              editingSkill={editingSkill}
-              onUpdateDone={handleUpdateDone}
-              isSubmitting={isSubmitting}
-              setIsSubmitting={setIsSubmitting}
-            />
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
+      {/* Header */}
+      <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-50 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl">
+                <SparklesIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400">
+                  Skill Tracker
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Manage and track your skills</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">
+                {skills.length} skills tracked
+              </span>
+              <ThemeToggle />
+              <span className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium rounded-full">
+                🟢 Live
+              </span>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }
+      </header>
 
-  return (
-    <div className="app">
-      <div className="app-header">
-        <h1>🎯 Skill Tracker</h1>
-        <p className="subtitle">Manage your skills and track your progress</p>
-      </div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Form Section */}
+          <div className="lg:col-span-2">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
+              <div className="flex items-center gap-2 mb-4">
+                <PlusCircleIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  {editingSkill ? "Edit Skill" : "Add New Skill"}
+                </h2>
+              </div>
+              <SkillForm
+                onSkillAdded={handleSkillAdded}
+                editingSkill={editingSkill}
+                onUpdateDone={handleUpdateDone}
+                isSubmitting={isSubmitting}
+                setIsSubmitting={setIsSubmitting}
+              />
+            </div>
+          </div>
 
-      <div className="app-content">
-        <div className="form-section">
-          <SkillForm
-            onSkillAdded={handleSkillAdded}
-            editingSkill={editingSkill}
-            onUpdateDone={handleUpdateDone}
-            isSubmitting={isSubmitting}
-            setIsSubmitting={setIsSubmitting}
-          />
+          {/* List Section */}
+          <div className="lg:col-span-3">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <ChartBarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Your Skills</h2>
+                </div>
+                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-sm font-medium rounded-full">
+                  {skills.length} skills
+                </span>
+              </div>
+              <SkillList
+                skills={skills}
+                loading={loading}
+                error={error}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onRetry={fetchSkills}
+              />
+            </div>
+          </div>
         </div>
-
-        <div className="list-section">
-          <SkillList
-            skills={skills}
-            loading={loading}
-            error={error}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onRetry={fetchSkills}
-          />
-        </div>
-      </div>
+      </main>
 
       <ToastContainer 
-        position="top-right"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
+  position="top-right"
+  autoClose={3000}
+  hideProgressBar={false}
+  newestOnTop
+  closeOnClick
+  rtl={false}
+  pauseOnFocusLoss
+  draggable
+  pauseOnHover
+  theme={toastTheme}
+/>
     </div>
   );
 }
