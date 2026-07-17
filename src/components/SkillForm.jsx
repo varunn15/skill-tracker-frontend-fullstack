@@ -32,8 +32,9 @@ function SkillForm({ onSkillAdded, editingSkill, onUpdateDone, isSubmitting, set
     }
   }, [editingSkill]);
 
+  // Search with 1 character minimum
   useEffect(() => {
-    if (debouncedSearch.length >= 2) {
+    if (debouncedSearch.length >= 1) {
       fetchSuggestions(debouncedSearch);
     } else {
       setSuggestions([]);
@@ -50,12 +51,12 @@ function SkillForm({ onSkillAdded, editingSkill, onUpdateDone, isSubmitting, set
         setShowSuggestions(true);
       } else {
         setSuggestions([]);
-        setShowSuggestions(false);
+        setShowSuggestions(true); // ✅ Keep dropdown open for "Add new"
       }
     } catch (error) {
       console.error("Error fetching suggestions:", error);
       setSuggestions([]);
-      setShowSuggestions(false);
+      setShowSuggestions(true); // ✅ Keep dropdown open for "Add new"
     } finally {
       setSearching(false);
     }
@@ -75,16 +76,27 @@ function SkillForm({ onSkillAdded, editingSkill, onUpdateDone, isSubmitting, set
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       const response = await createSkillInRegistry({
         name: searchTerm.trim(),
         category: category
       });
       const newSkill = response.data.skill;
-      handleSelectSkill(newSkill);
+      
+      // Auto-select the new skill
+      setSelectedSkill(newSkill);
+      setSearchTerm(newSkill.name);
+      setCategory(newSkill.category || "Other");
+      setShowSuggestions(false);
+      setErrors({ ...errors, skill: "" });
+      
       toast.success(`✅ "${newSkill.name}" added to registry!`);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to create skill");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -177,10 +189,10 @@ function SkillForm({ onSkillAdded, editingSkill, onUpdateDone, isSubmitting, set
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                if (e.target.value.length >= 2) setShowSuggestions(true);
+                if (e.target.value.length >= 1) setShowSuggestions(true);
               }}
               onFocus={() => {
-                if (searchTerm.length >= 2 && suggestions.length > 0) {
+                if (searchTerm.length >= 1) {
                   setShowSuggestions(true);
                 }
               }}
@@ -198,34 +210,50 @@ function SkillForm({ onSkillAdded, editingSkill, onUpdateDone, isSubmitting, set
             </div>
           )}
 
-          {/* Suggestions Dropdown */}
-          {showSuggestions && (
-            <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto animate-[slideDown_0.2s_ease-out]">
-              {suggestions.map((skill) => (
-                <button
-                  key={skill.skillId}
-                  type="button"
-                  onClick={() => handleSelectSkill(skill)}
-                  className="w-full px-4 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-150 flex items-center justify-between border-b border-gray-100 dark:border-gray-700 last:border-0"
-                >
-                  <span className="font-medium text-gray-800 dark:text-gray-200">{skill.name}</span>
-                  {skill.category && (
-                    <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
-                      {skill.category}
-                    </span>
-                  )}
-                </button>
-              ))}
-              {suggestions.length === 0 && searchTerm.length >= 2 && (
-                <button
-                  type="button"
-                  onClick={handleCreateNewSkill}
-                  className="w-full px-4 py-2.5 text-left text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-150 flex items-center gap-2"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  Add "{searchTerm}" as new skill
-                </button>
+          {/* ✅ FIXED: Suggestions Dropdown - ALWAYS SHOWS WHEN TYPING */}
+          {showSuggestions && searchTerm.length >= 1 && (
+            <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-64 overflow-y-auto animate-[slideDown_0.2s_ease-out]">
+              {/* Show existing suggestions if they exist */}
+              {suggestions.length > 0 && (
+                <>
+                  {suggestions.map((skill) => (
+                    <button
+                      key={skill.skillId}
+                      type="button"
+                      onClick={() => handleSelectSkill(skill)}
+                      className="w-full px-4 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-150 flex items-center justify-between border-b border-gray-100 dark:border-gray-700 last:border-0"
+                    >
+                      <span className="font-medium text-gray-800 dark:text-gray-200">{skill.name}</span>
+                      {skill.category && (
+                        <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
+                          {skill.category}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                  {/* Separator */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                </>
               )}
+              
+              {/* ✅ ALWAYS SHOW "Add new" when typing */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleCreateNewSkill();
+                }}
+                className="w-full px-4 py-3 text-left text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-150 flex items-center gap-2 bg-blue-50/50 dark:bg-blue-900/20 font-medium"
+                style={{ cursor: 'pointer' }}
+              >
+                <PlusIcon className="w-5 h-5 flex-shrink-0" />
+                <span>
+                  {suggestions.length > 0 
+                    ? `➕ Add "${searchTerm}" as new skill` 
+                    : `➕ Create "${searchTerm}" (not found, add to registry)`}
+                </span>
+              </button>
             </div>
           )}
         </div>
