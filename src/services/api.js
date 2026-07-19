@@ -8,7 +8,7 @@ console.log('🔗 API URL:', API_URL);
 
 const API = axios.create({
   baseURL: API_URL,
-  timeout: 60000, // 60 seconds for AI calls
+  timeout: 60000,
 });
 
 // Request interceptor
@@ -60,9 +60,8 @@ export const searchSkills = (query) => API.get(`/skills/search?q=${query}`);
 export const createSkillInRegistry = (data) => API.post('/skills/registry', data);
 export const getRegistrySkills = () => API.get('/skills/registry');
 
-// ========== AI APIs (OpenRouter) ==========
+// ========== AI APIs - NO /api PREFIX ==========
 export const getAIInsights = (data) => API.post('/ai/insights', data);
 export const getCareerReadiness = (data) => API.post('/ai/readiness', data);
-
 
 export default API;

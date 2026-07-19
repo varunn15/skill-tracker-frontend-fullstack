@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AIInsight from './AIInsight';
 import SuggestedSkills from './SuggestedSkills';
 import MissingSkills from './MissingSkills';
 import { getAIInsights } from '../../../services/api';
+import { ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
-function InsightsPanel({ onViewCareer }) {
+function InsightsPanel() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [aiData, setAiData] = useState(null);
   const [error, setError] = useState(null);
@@ -15,7 +18,24 @@ function InsightsPanel({ onViewCareer }) {
     setError(null);
     try {
       const response = await getAIInsights({ role: role || undefined });
-      setAiData(response.data);
+      console.log('📥 AI Insights Response:', response.data);
+      
+      // ✅ Handle response format
+      const data = response.data;
+      if (data.error) {
+        setError(data.error);
+        setAiData(null);
+        return;
+      }
+
+      // ✅ Ensure all fields exist with proper mapping
+      setAiData({
+        insight: data.insight || 'Keep building your skills! 💪',
+        suggestedSkills: data.suggestedSkills || [],
+        // ✅ Handle both "missingSkills" and "improvements"
+        missingSkills: data.missingSkills || data.improvements || [],
+        careerReadiness: data.careerReadiness || null
+      });
     } catch (error) {
       console.error('AI Insights error:', error);
       setError('Failed to get AI insights. Please try again.');
@@ -23,6 +43,10 @@ function InsightsPanel({ onViewCareer }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewCareer = () => {
+    navigate('/career');
   };
 
   // Show loading state
@@ -77,13 +101,15 @@ function InsightsPanel({ onViewCareer }) {
               placeholder="Enter target role (e.g., Frontend Developer)"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onKeyDown={(e) => e.key === 'Enter' && handleGetAIInsights()}
+              className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
             />
             <button
               onClick={handleGetAIInsights}
-              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 whitespace-nowrap"
+              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 whitespace-nowrap flex items-center gap-1"
             >
-              🤖 Get Insights
+              <SparklesIcon className="w-4 h-4" />
+              Get Insights
             </button>
           </div>
 
@@ -119,14 +145,25 @@ function InsightsPanel({ onViewCareer }) {
             placeholder="Enter target role (e.g., Frontend Developer)"
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onKeyDown={(e) => e.key === 'Enter' && handleGetAIInsights()}
+            className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
           />
           <button
             onClick={handleGetAIInsights}
             disabled={loading}
-            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 disabled:opacity-50 whitespace-nowrap"
+            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 disabled:opacity-50 whitespace-nowrap flex items-center gap-1"
           >
-            {loading ? '⏳ Analyzing...' : '🔄 Refresh'}
+            {loading ? (
+              <>
+                <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <SparklesIcon className="w-4 h-4" />
+                Refresh
+              </>
+            )}
           </button>
         </div>
 
@@ -162,20 +199,19 @@ function InsightsPanel({ onViewCareer }) {
                 </p>
                 {aiData.careerReadiness.strengths && (
                   <div className="mt-1">
-                    <span className="text-xs text-green-600 dark:text-green-400">✅ {aiData.careerReadiness.strengths.join(', ')}</span>
-                  </div>
-                )}
-                {aiData.careerReadiness.weaknesses && (
-                  <div className="mt-0.5">
-                    <span className="text-xs text-red-500 dark:text-red-400">⚠️ {aiData.careerReadiness.weaknesses.join(', ')}</span>
+                    <span className="text-xs text-green-600 dark:text-green-400">
+                      ✅ {aiData.careerReadiness.strengths.slice(0, 2).join(', ')}
+                      {aiData.careerReadiness.strengths.length > 2 && '...'}
+                    </span>
                   </div>
                 )}
               </div>
               <button
-                onClick={onViewCareer}
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200"
+                onClick={handleViewCareer}
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 flex items-center gap-1"
               >
-                View Details →
+                View Details
+                <ArrowRightIcon className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -183,8 +219,8 @@ function InsightsPanel({ onViewCareer }) {
 
         {!aiData.careerReadiness && (
           <button
-            onClick={onViewCareer}
-            className="w-full mt-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-200"
+            onClick={handleViewCareer}
+            className="w-full mt-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
           >
             🚀 View Career Readiness →
           </button>

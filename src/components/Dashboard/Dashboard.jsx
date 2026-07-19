@@ -33,7 +33,6 @@ function Dashboard() {
       const skillsRes = await getSkills();
       const skills = skillsRes.data || [];
 
-      // Process stats
       const total = skills.length;
       const beginner = skills.filter(s => s.level <= 3).length;
       const intermediate = skills.filter(s => s.level >= 4 && s.level <= 7).length;
@@ -41,13 +40,11 @@ function Dashboard() {
 
       setStats({ total, beginner, intermediate, advanced });
 
-      // Process level data for pie chart
       setLevelData({
         labels: ['Beginner', 'Intermediate', 'Advanced'],
         values: [beginner, intermediate, advanced],
       });
 
-      // Process category data
       const categoryMap = {};
       skills.forEach(skill => {
         const cat = skill.category || 'Other';
@@ -68,10 +65,6 @@ function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleViewCareer = () => {
-    alert('🚀 Career Readiness page coming soon!');
   };
 
   if (error) {
@@ -103,14 +96,9 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Stats Row */}
       <StatsRow stats={stats} />
-
-      {/* Charts Section */}
       <ChartsSection levelData={levelData} categoryData={categoryData} />
-
-      {/* Insights Panel - No hardcoded props, just onViewCareer */}
-      <InsightsPanel onViewCareer={handleViewCareer} />
+      <InsightsPanel /> {/* ✅ No props needed - navigation handled internally */}
     </div>
   );
 }

@@ -1,5 +1,13 @@
 function AIInsight({ insight }) {
-  if (!insight) {
+  // ✅ Handle both string and object insight
+  let displayInsight = insight;
+  
+  if (typeof insight === 'object' && insight !== null) {
+    // If insight is an object, extract the message
+    displayInsight = insight.message || insight.insight || JSON.stringify(insight);
+  }
+
+  if (!displayInsight || displayInsight === 'null' || displayInsight === 'undefined') {
     return (
       <div className="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
         <p className="text-gray-500 dark:text-gray-400 text-sm">
@@ -15,7 +23,7 @@ function AIInsight({ insight }) {
         <span className="text-xl">🧠</span>
         <div>
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">AI Insight</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{insight}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{displayInsight}</p>
         </div>
       </div>
     </div>
