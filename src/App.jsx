@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import SkillList from "./components/SkillList";
 import SkillForm from "./components/SkillForm";
+import DashboardPage from "./pages/DashboardPage";
 import ThemeToggle from "./components/ThemeToggle";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getSkills } from "./services/api";
-import { SparklesIcon, PlusCircleIcon, ChartBarIcon } from "@heroicons/react/24/outline";
+import { SparklesIcon, PlusCircleIcon, ChartBarIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
 
 function App() {
   const [skills, setSkills] = useState([]);
@@ -13,8 +14,7 @@ function App() {
   const [error, setError] = useState("");
   const [editingSkill, setEditingSkill] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toastTheme, setToastTheme] = useState(
-  document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+  const [view, setView] = useState('dashboard'); // 'dashboard' or 'skills'
 
   const fetchSkills = async () => {
     try {
@@ -59,9 +59,31 @@ function App() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">
-                {skills.length} skills tracked
-              </span>
+              {/* View Toggle Buttons */}
+              <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                <button
+                  onClick={() => setView('dashboard')}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                    view === 'dashboard'
+                      ? 'bg-white dark:bg-gray-800 shadow-sm text-blue-600 dark:text-blue-400'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                >
+                  <Squares2X2Icon className="w-4 h-4 inline mr-1" />
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => setView('skills')}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                    view === 'skills'
+                      ? 'bg-white dark:bg-gray-800 shadow-sm text-blue-600 dark:text-blue-400'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                >
+                  <PlusCircleIcon className="w-4 h-4 inline mr-1" />
+                  Skills
+                </button>
+              </div>
               <ThemeToggle />
               <span className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium rounded-full">
                 🟢 Live
@@ -73,63 +95,67 @@ function App() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Form Section */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
-              <div className="flex items-center gap-2 mb-4">
-                <PlusCircleIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                  {editingSkill ? "Edit Skill" : "Add New Skill"}
-                </h2>
-              </div>
-              <SkillForm
-                onSkillAdded={handleSkillAdded}
-                editingSkill={editingSkill}
-                onUpdateDone={handleUpdateDone}
-                isSubmitting={isSubmitting}
-                setIsSubmitting={setIsSubmitting}
-              />
-            </div>
-          </div>
-
-          {/* List Section */}
-          <div className="lg:col-span-3">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <ChartBarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Your Skills</h2>
+        {view === 'dashboard' ? (
+          <DashboardPage />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            {/* Form Section */}
+            <div className="lg:col-span-2">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <PlusCircleIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                    {editingSkill ? "Edit Skill" : "Add New Skill"}
+                  </h2>
                 </div>
-                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-sm font-medium rounded-full">
-                  {skills.length} skills
-                </span>
+                <SkillForm
+                  onSkillAdded={handleSkillAdded}
+                  editingSkill={editingSkill}
+                  onUpdateDone={handleUpdateDone}
+                  isSubmitting={isSubmitting}
+                  setIsSubmitting={setIsSubmitting}
+                />
               </div>
-              <SkillList
-                skills={skills}
-                loading={loading}
-                error={error}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onRetry={fetchSkills}
-              />
+            </div>
+
+            {/* List Section */}
+            <div className="lg:col-span-3">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <ChartBarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Your Skills</h2>
+                  </div>
+                  <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-sm font-medium rounded-full">
+                    {skills.length} skills
+                  </span>
+                </div>
+                <SkillList
+                  skills={skills}
+                  loading={loading}
+                  error={error}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onRetry={fetchSkills}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </main>
 
       <ToastContainer 
-  position="top-right"
-  autoClose={3000}
-  hideProgressBar={false}
-  newestOnTop
-  closeOnClick
-  rtl={false}
-  pauseOnFocusLoss
-  draggable
-  pauseOnHover
-  theme={toastTheme}
-/>
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 }
