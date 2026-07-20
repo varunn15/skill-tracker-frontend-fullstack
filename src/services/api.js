@@ -65,7 +65,11 @@ export const getAIInsights = (data) => API.post('/ai/insights', data);
 export const getCareerReadiness = (data) => API.post('/ai/readiness', data);
 
 // ========== ROADMAP API ==========
-export const generateRoadmap = (data) => API.post('/api/roadmap/generate', data);
-
+export const generateRoadmap = (data) => API.post('/roadmap/generate', data);
+export const saveRoadmap = (data) => API.post('/roadmap/save', data);
+export const getRoadmap = () => API.get('/roadmap');
+export const toggleTask = (data) => API.post('/roadmap/toggle', data);
+export const deleteRoadmap = (id) => API.delete(`/roadmap/${id}`);
+export const testRoadmap = () => API.get('/roadmap/test'); 
 
 export default API;
