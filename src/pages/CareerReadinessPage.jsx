@@ -339,7 +339,7 @@ const handleGenerateRoadmap = () => {
             className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
           >
             <RocketLaunchIcon className="w-5 h-5" />
-            🚀 Generate Learning Roadmap
+              Generate Learning Roadmap
           </button>
 
           {/* Your Skills */}
