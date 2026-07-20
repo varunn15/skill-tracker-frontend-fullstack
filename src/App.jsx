@@ -4,6 +4,7 @@ import SkillList from "./components/SkillList";
 import SkillForm from "./components/SkillForm";
 import DashboardPage from "./pages/DashboardPage";
 import CareerReadinessPage from "./pages/CareerReadinessPage";
+import RoadmapPage from "./pages/RoadmapPage";
 import ThemeToggle from "./components/ThemeToggle";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -16,7 +17,9 @@ import {
   RocketLaunchIcon 
 } from "@heroicons/react/24/outline";
 
-// Navigation component
+// ============================================================
+// NAVIGATION COMPONENT
+// ============================================================
 function Navigation() {
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
@@ -60,6 +63,9 @@ function Navigation() {
   );
 }
 
+// ============================================================
+// MAIN APP CONTENT
+// ============================================================
 function AppContent() {
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -93,7 +99,7 @@ function AppContent() {
   };
   const handleDelete = () => fetchSkills();
 
-  // Skills view (only shown on /skills route)
+  // ===== SKILLS VIEW =====
   if (location.pathname === '/skills') {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -139,19 +145,28 @@ function AppContent() {
     );
   }
 
-  // Career Readiness route - handled by CareerReadinessPage component
+  // ===== CAREER READINESS VIEW =====
   if (location.pathname === '/career') {
     return <CareerReadinessPage />;
   }
 
-  // Dashboard (default)
+  // ===== ROADMAP VIEW =====
+  if (location.pathname === '/roadmap') {
+    return <RoadmapPage />;
+  }
+
+  // ===== DASHBOARD VIEW (DEFAULT) =====
   return <DashboardPage />;
 }
 
+// ============================================================
+// APP WRAPPER
+// ============================================================
 function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
+        {/* Header */}
         <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-50 transition-colors duration-300">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
@@ -177,10 +192,12 @@ function App() {
           </div>
         </header>
 
+        {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <AppContent />
         </main>
 
+        {/* Toast Notifications */}
         <ToastContainer 
           position="top-right"
           autoClose={3000}

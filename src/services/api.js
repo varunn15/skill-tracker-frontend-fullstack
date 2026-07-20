@@ -64,4 +64,8 @@ export const getRegistrySkills = () => API.get('/skills/registry');
 export const getAIInsights = (data) => API.post('/ai/insights', data);
 export const getCareerReadiness = (data) => API.post('/ai/readiness', data);
 
+// ========== ROADMAP API ==========
+export const generateRoadmap = (data) => API.post('/api/roadmap/generate', data);
+
+
 export default API;

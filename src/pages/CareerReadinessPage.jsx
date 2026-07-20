@@ -84,6 +84,19 @@ function CareerReadinessPage() {
     }
   };
 
+  // Add this function
+const handleGenerateRoadmap = () => {
+  if (data) {
+    navigate('/roadmap', {
+      state: {
+        role: role,
+        missingSkills: data.weaknesses || [],
+        suggestedSkills: data.recommendations || []
+      }
+    });
+  }
+};
+
   const getScoreColor = (score) => {
     if (score >= 80) return 'text-green-600 dark:text-green-400';
     if (score >= 60) return 'text-yellow-600 dark:text-yellow-400';
@@ -319,6 +332,15 @@ function CareerReadinessPage() {
               <p className="text-sm text-gray-400 dark:text-gray-500">No recommendations yet</p>
             )}
           </div>
+
+          
+          <button
+            onClick={handleGenerateRoadmap}
+            className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+          >
+            <RocketLaunchIcon className="w-5 h-5" />
+            🚀 Generate Learning Roadmap
+          </button>
 
           {/* Your Skills */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
