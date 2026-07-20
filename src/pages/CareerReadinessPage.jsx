@@ -49,33 +49,34 @@ function CareerReadinessPage() {
       const response = await getCareerReadiness({ role: role.trim() });
       console.log('📥 Career Readiness Response:', response.data);
       
-      // ✅ Check if response has error
       if (response.data.error) {
-        setError(response.data.error);
+        setError(response.data.message || response.data.error);
+        setLoading(false);
         return;
       }
-
-      // ✅ Map response fields to what UI expects
+      
+      if (!response.data.score && response.data.score !== 0) {
+        setError('No data received from AI service');
+        setLoading(false);
+        return;
+      }
+      
       const mappedData = {
         score: response.data.score || 0,
-        // ✅ Handle both "weaknesses" and "improvements"
-        weaknesses: response.data.weaknesses || response.data.improvements || [],
-        // ✅ Handle strengths
+        weaknesses: response.data.weaknesses || [],
         strengths: response.data.strengths || [],
-        // ✅ Handle recommendations
         recommendations: response.data.recommendations || [],
-        // ✅ Summary
         summary: response.data.summary || 'Analysis complete'
       };
-
+      
       console.log('📊 Mapped data:', mappedData);
       setData(mappedData);
     } catch (error) {
       console.error('Career readiness error:', error);
-      if (error.response) {
-        console.log('Status:', error.response.status);
-        console.log('Data:', error.response.data);
-        setError(error.response.data?.error || 'Server error. Please try again.');
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else if (error.response?.data?.error) {
+        setError(error.response.data.error);
       } else {
         setError('Failed to connect to server. Please try again.');
       }
@@ -84,18 +85,18 @@ function CareerReadinessPage() {
     }
   };
 
-  // Add this function
-const handleGenerateRoadmap = () => {
-  if (data) {
-    navigate('/roadmap', {
-      state: {
-        role: role,
-        missingSkills: data.weaknesses || [],
-        suggestedSkills: data.recommendations || []
-      }
-    });
-  }
-};
+  // ✅ Handle generate roadmap - pass role
+  const handleGenerateRoadmap = () => {
+    if (data) {
+      navigate('/roadmap', {
+        state: {
+          role: role, // ✅ This is the role passed to roadmap
+          missingSkills: data.weaknesses || [],
+          suggestedSkills: data.recommendations || []
+        }
+      });
+    }
+  };
 
   const getScoreColor = (score) => {
     if (score >= 80) return 'text-green-600 dark:text-green-400';
@@ -278,7 +279,7 @@ const handleGenerateRoadmap = () => {
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-gray-400 dark:text-gray-500">No strengths identified yet</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">No strengths identified</p>
               )}
             </div>
 
@@ -303,7 +304,7 @@ const handleGenerateRoadmap = () => {
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-gray-400 dark:text-gray-500">No weaknesses identified yet</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">No weaknesses identified</p>
               )}
             </div>
           </div>
@@ -333,64 +334,14 @@ const handleGenerateRoadmap = () => {
             )}
           </div>
 
-          
+          {/* Generate Roadmap Button */}
           <button
             onClick={handleGenerateRoadmap}
-            className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+            className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
           >
             <RocketLaunchIcon className="w-5 h-5" />
-              Generate Learning Roadmap
+            🚀 Generate Learning Roadmap
           </button>
-
-          {/* Your Skills */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <AcademicCapIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <h3 className="font-semibold text-gray-800 dark:text-gray-200">Your Skills</h3>
-              <span className="ml-auto text-sm text-gray-400 dark:text-gray-500">
-                {skills.length} skills
-              </span>
-            </div>
-            {skills.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm rounded-full border border-blue-100 dark:border-blue-800 flex items-center gap-1"
-                  >
-                    {skill.skillName}
-                    <span className="text-xs text-blue-400 dark:text-blue-500 font-medium">({skill.level}/10)</span>
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400 dark:text-gray-500">
-                No skills added yet. Go to Skills tab to add some!
-              </p>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-4 flex-wrap">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="px-6 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 flex items-center gap-2"
-            >
-              ← Back to Dashboard
-            </button>
-            <button
-              onClick={() => {
-                setData(null);
-                setRole('');
-              }}
-              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-200 flex items-center gap-2"
-            >
-              <ArrowPathIcon className="w-4 h-4" />
-              New Analysis
-            </button>
-          </div>
         </div>
       )}
 

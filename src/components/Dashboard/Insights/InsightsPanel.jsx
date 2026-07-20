@@ -20,25 +20,29 @@ function InsightsPanel() {
       const response = await getAIInsights({ role: role || undefined });
       console.log('📥 AI Insights Response:', response.data);
       
-      // ✅ Handle response format
-      const data = response.data;
-      if (data.error) {
-        setError(data.error);
+      if (response.data.error) {
+        setError(response.data.message || response.data.error);
         setAiData(null);
+        setLoading(false);
         return;
       }
-
-      // ✅ Ensure all fields exist with proper mapping
+      
+      const data = response.data;
       setAiData({
         insight: data.insight || 'Keep building your skills! 💪',
         suggestedSkills: data.suggestedSkills || [],
-        // ✅ Handle both "missingSkills" and "improvements"
-        missingSkills: data.missingSkills || data.improvements || [],
+        missingSkills: data.missingSkills || [],
         careerReadiness: data.careerReadiness || null
       });
     } catch (error) {
       console.error('AI Insights error:', error);
-      setError('Failed to get AI insights. Please try again.');
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else if (error.response?.data?.error) {
+        setError(error.response.data.error);
+      } else {
+        setError('Failed to get AI insights. Please try again.');
+      }
       setAiData(null);
     } finally {
       setLoading(false);

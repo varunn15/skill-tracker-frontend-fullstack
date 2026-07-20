@@ -28,11 +28,17 @@ API.interceptors.response.use(
   },
   (error) => {
     let errorMessage = "Something went wrong. Please try again.";
-
+    
     if (error.response) {
       errorMessage = error.response.data?.message || 
                      error.response.data?.error || 
+                     error.response.statusText ||
                      errorMessage;
+      
+      if (error.response.status === 400 || error.response.status === 500) {
+        error.userMessage = errorMessage;
+        return Promise.reject(error);
+      }
     } else if (error.request) {
       if (!navigator.onLine) {
         errorMessage = "You are offline. Please check your connection.";
@@ -40,10 +46,12 @@ API.interceptors.response.use(
         errorMessage = "Network error. Please check your internet connection.";
       }
     }
-
-    toast.error(`❌ ${errorMessage}`);
+    
+    if (error.response?.status !== 400 && error.response?.status !== 500) {
+      toast.error(`❌ ${errorMessage}`);
+    }
+    
     error.userMessage = errorMessage;
-
     return Promise.reject(error);
   }
 );
@@ -60,16 +68,28 @@ export const searchSkills = (query) => API.get(`/skills/search?q=${query}`);
 export const createSkillInRegistry = (data) => API.post('/skills/registry', data);
 export const getRegistrySkills = () => API.get('/skills/registry');
 
-// ========== AI APIs - NO /api PREFIX ==========
+// ========== AI APIs ==========
 export const getAIInsights = (data) => API.post('/ai/insights', data);
 export const getCareerReadiness = (data) => API.post('/ai/readiness', data);
 
-// ========== ROADMAP API ==========
+// ========== ROADMAP APIs ==========
 export const generateRoadmap = (data) => API.post('/roadmap/generate', data);
 export const saveRoadmap = (data) => API.post('/roadmap/save', data);
-export const getRoadmap = () => API.get('/roadmap');
+export const getRoadmap = (role) => {
+  const query = role ? `?role=${encodeURIComponent(role)}` : '';
+  return API.get(`/roadmap${query}`);
+};
 export const toggleTask = (data) => API.post('/roadmap/toggle', data);
 export const deleteRoadmap = (id) => API.delete(`/roadmap/${id}`);
-export const testRoadmap = () => API.get('/roadmap/test'); 
+
+// ========== RESUME APIs ==========
+export const uploadResume = (formData) => {
+  return API.post('/upload-resume', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    timeout: 60000,
+  });
+};
 
 export default API;
