@@ -1,9 +1,12 @@
+import { Lightbulb } from 'lucide-react';
+
 function SuggestedSkills({ skills = [] }) {
   if (skills.length === 0) {
     return (
-      <div className="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+      <div className="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg flex items-center gap-2">
+        <Lightbulb className="w-5 h-5 text-amber-500 shrink-0" />
         <p className="text-gray-500 dark:text-gray-400 text-sm">
-          💡 No suggestions yet. Add more skills!
+          No suggestions yet. Add more skills!
         </p>
       </div>
     );

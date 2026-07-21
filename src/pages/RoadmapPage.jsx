@@ -1,15 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { generateRoadmap, saveRoadmap, getRoadmap, toggleTask, getSkills } from '../services/api';
 import { toast } from 'react-toastify';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  RocketLaunchIcon, 
-  AcademicCapIcon,
-  CheckBadgeIcon,
-  DocumentIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon
-} from '@heroicons/react/24/outline';
+  Rocket, 
+  GraduationCap, 
+  BadgeCheck, 
+  FileText, 
+  ArrowLeft, 
+  ArrowRight, 
+  BookOpen, 
+  Clock, 
+  Star 
+} from 'lucide-react';
 
 function RoadmapPage() {
   const navigate = useNavigate();
@@ -19,13 +23,35 @@ function RoadmapPage() {
   const [roadmap, setRoadmap] = useState(null);
   const [roadmapId, setRoadmapId] = useState(null);
   const [error, setError] = useState(null);
-  const [progress, setProgress] = useState(0);
   const [skillsUpdated, setSkillsUpdated] = useState(false);
   const [updatedSkillsList, setUpdatedSkillsList] = useState([]);
   const [isUpdating, setIsUpdating] = useState(false);
 
   // ✅ Get role from location state
   const { role, missingSkills, suggestedSkills } = location.state || {};
+
+  // ============================================================
+  // SAVE ROADMAP TO DATABASE
+  // ============================================================
+  const handleSaveRoadmap = useCallback(async () => {
+    if (!roadmap || roadmapId) return;
+    
+    setSaving(true);
+    try {
+      const response = await saveRoadmap({
+        role: roadmap.role,
+        levels: roadmap.levels
+      });
+      
+      if (response.data.success) {
+        setRoadmapId(response.data.roadmap._id);
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+    } finally {
+      setSaving(false);
+    }
+  }, [roadmap, roadmapId]);
 
   // ============================================================
   // LOAD OR GENERATE ROADMAP - UPDATED
@@ -41,7 +67,6 @@ function RoadmapPage() {
           const r = existing.data.roadmap;
           setRoadmap(r);
           setRoadmapId(r._id);
-          setProgress(r.progress || 0);
           setLoading(false);
           return;
         }
@@ -84,43 +109,23 @@ function RoadmapPage() {
     if (role) {
       loadOrGenerate();
     } else {
-      setError('No role specified. Please go back and select a career path.');
-      setLoading(false);
+      setTimeout(() => {
+        setError('No role specified. Please go back and select a career path.');
+        setLoading(false);
+      }, 0);
     }
-  }, [role]); // ✅ Add role as dependency
+  }, [role, missingSkills, suggestedSkills]); // ✅ Add dependencies
 
   // ============================================================
   // AUTO-SAVE ON GENERATE
   // ============================================================
   useEffect(() => {
     if (roadmap && !roadmapId && !saving && !error) {
-      handleSaveRoadmap();
+      setTimeout(() => {
+        handleSaveRoadmap();
+      }, 0);
     }
-  }, [roadmap]);
-
-  // ============================================================
-  // SAVE ROADMAP TO DATABASE
-  // ============================================================
-  const handleSaveRoadmap = async () => {
-    if (!roadmap || roadmapId) return;
-    
-    setSaving(true);
-    try {
-      const response = await saveRoadmap({
-        role: roadmap.role,
-        levels: roadmap.levels
-      });
-      
-      if (response.data.success) {
-        setRoadmapId(response.data.roadmap._id);
-        setProgress(response.data.roadmap.progress || 0);
-      }
-    } catch (error) {
-      console.error('Save error:', error);
-    } finally {
-      setSaving(false);
-    }
-  };
+  }, [roadmap, roadmapId, saving, error, handleSaveRoadmap]);
 
   // ============================================================
   // REFRESH SKILLS AND NAVIGATE
@@ -129,7 +134,7 @@ function RoadmapPage() {
     setIsUpdating(true);
     try {
       await getSkills();
-      toast.success('✅ Skills updated! Check your Skills tab.');
+      toast.success('Skills updated! Check your Skills tab.');
     } catch (error) {
       console.error('Refresh skills error:', error);
     } finally {
@@ -164,7 +169,6 @@ function RoadmapPage() {
         task.completed = !task.completed;
         
         setRoadmap(updatedRoadmap);
-        setProgress(response.data.progress || 0);
 
         if (task.completed && response.data.updatedSkills?.length > 0) {
           const skillNames = response.data.updatedSkills.map(s => 
@@ -175,7 +179,7 @@ function RoadmapPage() {
           
           await refreshSkills();
           
-          toast.success(`✅ Skills updated: ${skillNames.join(', ')}`);
+          toast.success(`Skills updated: ${skillNames.join(', ')}`);
           
           setTimeout(() => setSkillsUpdated(false), 8000);
         }
@@ -225,9 +229,9 @@ function RoadmapPage() {
           <p className="text-red-600 dark:text-red-300 mt-1">{error}</p>
           <button
             onClick={() => navigate('/career')}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-1.5 mx-auto"
           >
-            ← Back to Career Readiness
+            <ArrowLeft className="w-4 h-4" /> Back to Career Readiness
           </button>
         </div>
       </div>
@@ -243,9 +247,9 @@ function RoadmapPage() {
         <p className="text-gray-500 dark:text-gray-400">No roadmap available for {role}.</p>
         <button
           onClick={() => navigate('/career')}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-1.5 mx-auto"
         >
-          ← Back to Career Readiness
+          <ArrowLeft className="w-4 h-4" /> Back to Career Readiness
         </button>
       </div>
     );
@@ -255,249 +259,298 @@ function RoadmapPage() {
   // RENDER
   // ============================================================
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+    >
       {/* Skills Updated Notification */}
-      {skillsUpdated && (
-        <div className="fixed bottom-4 right-4 bg-green-100 dark:bg-green-900/30 
-          border border-green-200 dark:border-green-800 rounded-xl px-4 py-3 
-          shadow-lg max-w-sm z-50 animate-[fadeIn_0.3s_ease-out]">
-          <div className="flex items-start gap-3">
-            <span className="text-xl">⭐</span>
-            <div>
-              <p className="text-sm font-medium text-green-700 dark:text-green-300">
-                Skills Updated!
+      <AnimatePresence>
+        {skillsUpdated && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-6 right-6 bg-white dark:bg-gray-800 border border-green-100 dark:border-green-900/50 rounded-2xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.3)] max-w-sm z-50 flex items-start gap-3.5"
+          >
+            <Star className="w-6 h-6 text-yellow-500 fill-yellow-500 mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-bold text-gray-900 dark:text-white">
+                Skills Upgraded!
               </p>
-              <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 leading-relaxed">
                 {updatedSkillsList.join(', ')}
               </p>
-              <div className="flex gap-2 mt-2">
+              <div className="flex gap-2.5 mt-3.5">
                 <button
                   onClick={goToSkillsTab}
-                  className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg transition-colors flex items-center gap-1"
+                  className="text-xs bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold px-3 py-1.5 rounded-lg hover:brightness-105 active:scale-95 transition-all flex items-center gap-1 shadow-sm"
                 >
-                  View Skills <ArrowRightIcon className="w-3 h-3" />
+                  View Skills <ArrowRight className="w-3 h-3" />
                 </button>
                 <button
                   onClick={() => setSkillsUpdated(false)}
-                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700"
+                  className="text-xs text-gray-500 dark:text-gray-400 font-bold hover:text-gray-700 dark:hover:text-gray-200 transition-colors px-2 py-1.5"
                 >
                   Dismiss
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-green-600 to-blue-600 rounded-xl">
-            <RocketLaunchIcon className="w-6 h-6 text-white" />
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-5">
+        <div className="flex items-center gap-3.5">
+          <div className="p-2.5 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-md shadow-blue-500/10">
+            <Rocket className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              🚀 Learning Roadmap
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+              Learning Roadmap
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {roadmap.role || role} • {totalWeeks} weeks • {roadmap.levels.length} phases
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              {roadmap.role || role} • <span className="text-blue-500 dark:text-blue-400 font-bold">{totalWeeks} weeks</span> • {roadmap.levels.length} phases
             </p>
           </div>
         </div>
         
         <div className="flex items-center gap-3 flex-wrap">
-          <span className={`text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5
+          <span className={`text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border
             ${roadmapId 
-              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' 
-              : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+              ? 'bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-green-400 border-green-100/40 dark:border-green-900/10' 
+              : 'bg-yellow-50 dark:bg-yellow-950/20 text-yellow-600 dark:text-yellow-400 border-yellow-100/40 dark:border-yellow-900/10'
             }`}
           >
             <span className={`w-1.5 h-1.5 rounded-full animate-pulse
               ${roadmapId ? 'bg-green-500' : 'bg-yellow-500'}`}
             />
-            {roadmapId ? '✅ Saved' : saving ? '💾 Saving...' : '⚠️ Not Saved'}
+            {roadmapId ? 'Saved' : saving ? 'Saving...' : 'Draft'}
           </span>
           
           <button
             onClick={handleSaveRoadmap}
             disabled={saving || !!roadmapId}
-            className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 flex items-center gap-2
+            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200 flex items-center gap-1.5
               ${roadmapId 
-                ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 cursor-default' 
-                : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg'
+                ? 'bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-green-400 border border-green-100/30 dark:border-green-900/20 cursor-default' 
+                : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg hover:shadow-blue-500/10 active:scale-[0.98]'
               }`}
           >
             {saving ? (
               <>
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                 Saving...
               </>
             ) : roadmapId ? (
-              '✅ Saved'
+              'Saved'
             ) : (
-              '💾 Save Roadmap'
+              'Save Roadmap'
             )}
           </button>
           
           <button
             onClick={() => navigate('/career')}
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/80 border border-gray-200/50 dark:border-gray-700/50 text-xs font-bold transition-all flex items-center gap-1.5"
           >
-            <ArrowLeftIcon className="w-4 h-4" />
+            <ArrowLeft className="w-3.5 h-3.5" />
             Back
           </button>
         </div>
       </div>
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 text-center">
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{totalWeeks}w</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Estimated Time</p>
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        {[
+          { label: 'Estimated Time', val: `${totalWeeks} Weeks`, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50/50 dark:bg-blue-950/10' },
+          { label: 'Learning Phases', val: `${roadmap.levels.length} Phases`, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50/50 dark:bg-green-950/10' },
+          { label: 'Tasks Completed', val: `${completedTasks} / ${totalTasks}`, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50/50 dark:bg-purple-950/10' },
+        ].map((item, index) => (
+          <div 
+            key={index} 
+            className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 text-center shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_25px_rgba(0,0,0,0.02)] transition-all duration-300"
+          >
+            <p className={`text-xl font-extrabold tracking-tight ${item.color}`}>{item.val}</p>
+            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-1.5">{item.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Overall Completion Progress Bar */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] mb-8">
+        <div className="flex items-center justify-between mb-2.5">
+          <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Overall Completion</p>
+          <span className="text-sm font-extrabold text-blue-600 dark:text-blue-400">{progressPercent}%</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 text-center">
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{roadmap.levels.length}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Learning Phases</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 text-center">
-          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-            {completedTasks}/{totalTasks}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Tasks Completed</p>
+        <div className="w-full bg-gray-100 dark:bg-gray-700/50 h-2.5 rounded-full overflow-hidden">
+          <motion.div 
+            className="h-full bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercent}%` }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          />
         </div>
       </div>
 
       {/* Phases */}
       <div className="space-y-6">
-        {roadmap.levels.map((level, phaseIndex) => (
-          <div
-            key={phaseIndex}
-            className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-          >
-            {/* Phase Header */}
-            <div className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-100 dark:border-gray-700">
-              <div className="flex items-center justify-between">
+        {roadmap.levels.map((level, phaseIndex) => {
+          const completedCount = level.tasks?.filter(t => t.completed).length || 0;
+          const totalCount = level.tasks?.length || 0;
+          const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: phaseIndex * 0.1, duration: 0.4 }}
+              key={phaseIndex}
+              className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.03)] transition-all duration-300"
+            >
+              {/* Phase Header */}
+              <div className="p-6 bg-gradient-to-r from-gray-50/80 to-blue-50/20 dark:from-gray-900/20 dark:to-blue-950/5 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-100/30 dark:border-blue-900/20">
                       {level.phase || `Phase ${phaseIndex + 1}`}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {level.duration || '1-2 weeks'}
+                    <span className="text-xs font-bold text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" /> {level.duration || '1-2 weeks'}
                     </span>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mt-1">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mt-2 tracking-tight">
                     {level.title || `Phase ${phaseIndex + 1}`}
                   </h3>
                 </div>
-                {level.tasks && level.tasks.length > 0 && (
-                  <div className="text-right">
-                    <div className="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500"
-                        style={{ 
-                          width: `${(level.tasks.filter(t => t.completed).length / level.tasks.length) * 100}%` 
-                        }}
+                {totalCount > 0 && (
+                  <div className="sm:text-right min-w-[120px]">
+                    <div className="flex items-center gap-2 mb-1.5 sm:justify-end">
+                      <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                        {completedCount} of {totalCount} completed
+                      </span>
+                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-1.5 py-0.5 rounded-md">
+                        {pct}%
+                      </span>
+                    </div>
+                    <div className="w-full sm:w-32 bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden ml-auto">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${pct}%` }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
                       />
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {level.tasks.filter(t => t.completed).length}/{level.tasks.length}
-                    </span>
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Phase Content */}
-            <div className="p-6 space-y-5">
-              {/* Skills */}
-              {level.skills && level.skills.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-2">
-                    <AcademicCapIcon className="w-4 h-4 text-blue-500" />
-                    Skills
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {level.skills.slice(0, 6).map((skill, i) => (
-                      <span
-                        key={i}
-                        className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm rounded-full border border-blue-100 dark:border-blue-800"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Tasks with Checkboxes */}
-              {level.tasks && level.tasks.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-2">
-                    <CheckBadgeIcon className="w-4 h-4 text-green-500" />
-                    Tasks
-                  </p>
-                  <ul className="space-y-2">
-                    {level.tasks.map((task, taskIndex) => (
-                      <li 
-                        key={taskIndex} 
-                        className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/30 p-2 rounded-lg transition-colors cursor-pointer group"
-                        onClick={() => handleToggleTask(phaseIndex, taskIndex)}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={task.completed || false}
-                          onChange={() => {}}
-                          className="appearance-none w-5 h-5 rounded-md border-2 
-                            border-gray-300 dark:border-gray-600 
-                            bg-white dark:bg-gray-700
-                            checked:bg-blue-600 checked:border-blue-600
-                            dark:checked:bg-blue-500 dark:checked:border-blue-500
-                            focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                            hover:border-blue-400 dark:hover:border-blue-400
-                            cursor-pointer transition-all duration-200
-                            relative
-                            checked:after:content-['✓'] checked:after:text-white 
-                            checked:after:flex checked:after:items-center checked:after:justify-center 
-                            checked:after:text-sm checked:after:font-bold
-                            checked:after:absolute checked:after:inset-0
-                            disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={saving || isUpdating}
-                        />
-                        <span className={task.completed ? 'line-through text-gray-400 dark:text-gray-500' : ''}>
-                          {task.title || task}
+              {/* Phase Content */}
+              <div className="p-6 space-y-6">
+                {/* Skills */}
+                {level.skills && level.skills.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5 mb-3">
+                      <GraduationCap className="w-4 h-4 text-blue-500" />
+                      Core Competencies
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {level.skills.slice(0, 8).map((skill, i) => (
+                        <span
+                          key={i}
+                          className="px-3 py-1.5 bg-blue-50/50 dark:bg-blue-900/10 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-xl border border-blue-100/30 dark:border-blue-900/10 hover:bg-blue-100/50 dark:hover:bg-blue-900/20 transition-all cursor-default"
+                        >
+                          {skill}
                         </span>
-                        {isUpdating && (
-                          <span className="text-xs text-gray-400 animate-pulse ml-auto">Updating...</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-              {/* Projects */}
-              {level.projects && level.projects.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-2">
-                    <DocumentIcon className="w-4 h-4 text-purple-500" />
-                    Projects
-                  </p>
-                  <ul className="space-y-1.5">
-                    {level.projects.slice(0, 3).map((project, i) => (
-                      <li key={i} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                        <span className="text-purple-500 mt-0.5">📘</span>
-                        {project}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
+                {/* Tasks with Checkboxes */}
+                {level.tasks && level.tasks.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5 mb-3">
+                      <BadgeCheck className="w-4 h-4 text-green-500" />
+                      Required Action Steps
+                    </p>
+                    <ul className="space-y-2">
+                      {level.tasks.map((task, taskIndex) => {
+                        const isCompleted = task.completed || false;
+                        return (
+                          <motion.li 
+                            whileHover={{ x: 4 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                            key={taskIndex} 
+                            className={`flex items-center gap-3.5 text-xs font-semibold p-3 rounded-xl transition-all duration-200 cursor-pointer border group
+                              ${isCompleted 
+                                ? 'bg-gray-50/50 dark:bg-gray-900/20 border-gray-100 dark:border-gray-800/50 text-gray-400 dark:text-gray-500' 
+                                : 'bg-white dark:bg-gray-800/40 border-gray-100 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 hover:bg-blue-50/20 dark:hover:bg-blue-950/5 hover:border-blue-100/30'
+                              }`}
+                            onClick={() => handleToggleTask(phaseIndex, taskIndex)}
+                          >
+                            <div className="relative flex items-center justify-center">
+                              <input
+                                type="checkbox"
+                                checked={isCompleted}
+                                onChange={() => {}}
+                                className="sr-only"
+                                disabled={saving || isUpdating}
+                              />
+                              <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all duration-200
+                                ${isCompleted 
+                                  ? 'bg-gradient-to-br from-blue-600 to-purple-600 border-transparent text-white shadow-sm' 
+                                  : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 hover:border-blue-400 dark:hover:border-blue-400'
+                                }
+                                ${saving || isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                              >
+                                {isCompleted && (
+                                  <svg className="w-3.5 h-3.5 stroke-[3.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                  </svg>
+                                )}
+                              </div>
+                            </div>
+                            <span className={`leading-relaxed flex-1 ${isCompleted ? 'line-through opacity-75' : ''}`}>
+                              {task.title || task}
+                            </span>
+                            {isUpdating && (
+                              <span className="text-[10px] font-bold text-gray-400 animate-pulse ml-auto">Syncing...</span>
+                            )}
+                          </motion.li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Projects */}
+                {level.projects && level.projects.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5 mb-3">
+                      <FileText className="w-4 h-4 text-purple-500" />
+                      Milestone Projects
+                    </p>
+                    <ul className="space-y-2.5">
+                      {level.projects.slice(0, 3).map((project, i) => (
+                        <li 
+                          key={i} 
+                          className="text-xs font-semibold text-gray-600 dark:text-gray-300 flex items-start gap-3 bg-purple-50/20 dark:bg-purple-950/10 p-3.5 rounded-xl border border-purple-100/30 dark:border-purple-900/10"
+                        >
+                          <BookOpen className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
+                          <span className="leading-relaxed">{project}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
-    </div>
+    </motion.div>
   );
 }
 

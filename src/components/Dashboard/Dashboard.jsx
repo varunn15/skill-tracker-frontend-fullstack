@@ -3,6 +3,7 @@ import StatsRow from './Stats/StatsRow';
 import ChartsSection from './Charts/ChartsSection';
 import InsightsPanel from './Insights/InsightsPanel';
 import { getSkills } from '../../services/api';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 
 function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -21,10 +22,6 @@ function Dashboard() {
     labels: ['Frontend', 'Backend', 'DevOps', 'Database', 'Other'],
     values: [0, 0, 0, 0, 0],
   });
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -67,17 +64,23 @@ function Dashboard() {
     }
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      fetchDashboardData();
+    }, 0);
+  }, []);
+
   if (error) {
     return (
       <div className="text-center py-12">
-        <div className="text-5xl mb-4">⚠️</div>
+        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4 animate-bounce" />
         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Failed to Load Dashboard</h3>
         <p className="text-gray-500 dark:text-gray-400 mb-4">{error}</p>
         <button 
           onClick={fetchDashboardData}
-          className="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-200"
+          className="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-200 flex items-center gap-1.5 mx-auto"
         >
-          🔄 Retry
+          <RefreshCw className="w-4 h-4 animate-spin-hover" /> Retry
         </button>
       </div>
     );

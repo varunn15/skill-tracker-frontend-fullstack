@@ -1,7 +1,7 @@
 import SkillForm from '../components/SkillForm';
 import SkillList from '../components/SkillList';
 import ResumeUpload from '../components/ResumeUpload';
-import { PlusCircleIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { PlusCircle, BarChart3 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 function SkillsPage({
@@ -22,7 +22,7 @@ function SkillsPage({
     if (onSkillAdded) {
       onSkillAdded();
     }
-    toast.success(`✅ ${extractedSkills.length} skills added from resume!`);
+    toast.success(`${extractedSkills.length} skills added from resume!`);
   };
 
   return (
@@ -31,7 +31,7 @@ function SkillsPage({
       <div className="lg:col-span-2 space-y-6">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
           <div className="flex items-center gap-2 mb-4">
-            <PlusCircleIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <PlusCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
               {editingSkill ? "Edit Skill" : "Add New Skill"}
             </h2>
@@ -54,7 +54,7 @@ function SkillsPage({
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <ChartBarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <BarChart3 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Your Skills</h2>
             </div>
             <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-sm font-medium rounded-full">

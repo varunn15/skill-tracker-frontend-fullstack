@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 // ✅ API URL from environment
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 console.log('🔗 API URL:', API_URL);
 
@@ -73,7 +73,7 @@ API.interceptors.response.use(
       }
     }
     
-    toast.error(`❌ ${errorMessage}`);
+    toast.error(errorMessage);
     error.userMessage = errorMessage;
     return Promise.reject(error);
   }

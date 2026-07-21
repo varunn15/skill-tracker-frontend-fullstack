@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from "react-router-dom";
+import { Routes, Route, Link, useLocation, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getSkills } from "./services/api";
@@ -14,12 +14,14 @@ import LoginPage from "./pages/LoginPage";
 
 
 import { 
-  SparklesIcon, 
-  PlusCircleIcon, 
-  Squares2X2Icon,
-  RocketLaunchIcon,
-  ArrowRightOnRectangleIcon
-} from "@heroicons/react/24/outline";
+  Sparkles, 
+  PlusCircle, 
+  LayoutGrid, 
+  Rocket, 
+  LogOut,
+  User
+} from "lucide-react";
+import { motion } from "framer-motion";
 import "./App.css";
 
 // ============================================================
@@ -27,52 +29,53 @@ import "./App.css";
 // ============================================================
 function Navigation() {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const isActive = (path) => location.pathname === path;
 
+  const navLinks = [
+    { to: "/dashboard", label: "Dashboard", icon: LayoutGrid },
+    { to: "/skills", label: "Skills", icon: PlusCircle },
+    { to: "/career", label: "Career", icon: Rocket },
+  ];
+
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-        <Link
-          to="/dashboard"
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
-            isActive('/dashboard')
-              ? 'bg-white dark:bg-gray-800 shadow-sm text-blue-600 dark:text-blue-400'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-          }`}
-        >
-          <Squares2X2Icon className="w-4 h-4" />
-          Dashboard
-        </Link>
-        <Link
-          to="/skills"
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
-            isActive('/skills')
-              ? 'bg-white dark:bg-gray-800 shadow-sm text-blue-600 dark:text-blue-400'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-          }`}
-        >
-          <PlusCircleIcon className="w-4 h-4" />
-          Skills
-        </Link>
-        <Link
-          to="/career"
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
-            isActive('/career')
-              ? 'bg-white dark:bg-gray-800 shadow-sm text-blue-600 dark:text-blue-400'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-          }`}
-        >
-          <RocketLaunchIcon className="w-4 h-4" />
-          Career
-        </Link>
+    <div className="flex items-center gap-3">
+      <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 relative border border-gray-200/40 dark:border-gray-700/40">
+        {navLinks.map((link) => {
+          const Icon = link.icon;
+          const active = isActive(link.to);
+          return (
+            <Link
+              key={link.to}
+              to={link.to}
+              className={`px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors duration-200 flex items-center gap-1.5 relative`}
+              style={{ WebkitTapHighlightColor: "transparent" }}
+            >
+              {active && (
+                <motion.span
+                  layoutId="bubble"
+                  className="absolute inset-0 bg-white dark:bg-gray-900 rounded-lg shadow-sm"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                />
+              )}
+              <span className={`relative z-10 flex items-center gap-1.5 ${
+                active 
+                  ? "text-blue-600 dark:text-blue-400 font-bold" 
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              }`}>
+                <Icon className="w-4 h-4" />
+                {link.label}
+              </span>
+            </Link>
+          );
+        })}
       </div>
       <button
         onClick={logout}
-        className="px-3 py-1.5 text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors flex items-center gap-1"
+        className="px-3.5 py-1.5 text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 font-medium transition-all duration-200 flex items-center gap-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20"
       >
-        <ArrowRightOnRectangleIcon className="w-4 h-4" />
-        Logout
+        <LogOut className="w-4 h-4" />
+        <span className="hidden sm:inline">Logout</span>
       </button>
     </div>
   );
@@ -84,8 +87,9 @@ function Navigation() {
 function UserInfo() {
   const { user } = useAuth();
   return (
-    <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-      <span className="hidden sm:inline">👋 {user?.username}</span>
+    <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
+      <User className="w-4 h-4 text-gray-400" />
+      <span className="hidden sm:inline">{user?.username}</span>
     </div>
   );
 }
@@ -115,7 +119,9 @@ function AppContent() {
   };
 
   useEffect(() => {
-    fetchSkills();
+    setTimeout(() => {
+      fetchSkills();
+    }, 0);
   }, []);
 
   const handleSkillAdded = () => fetchSkills();
@@ -126,33 +132,73 @@ function AppContent() {
   };
   const handleDelete = () => fetchSkills();
 
+  const pageVariants = {
+    initial: { opacity: 0, y: 12 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+  };
+
   if (location.pathname === '/skills') {
     return (
-      <SkillsPage
-        skills={skills}
-        loading={loading}
-        error={error}
-        editingSkill={editingSkill}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onRetry={fetchSkills}
-        onSkillAdded={handleSkillAdded}
-        onUpdateDone={handleUpdateDone}
-        isSubmitting={isSubmitting}
-        setIsSubmitting={setIsSubmitting}
-      />
+      <motion.div
+        initial="initial"
+        animate="animate"
+        variants={pageVariants}
+        transition={pageVariants.transition}
+      >
+        <SkillsPage
+          skills={skills}
+          loading={loading}
+          error={error}
+          editingSkill={editingSkill}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onRetry={fetchSkills}
+          onSkillAdded={handleSkillAdded}
+          onUpdateDone={handleUpdateDone}
+          isSubmitting={isSubmitting}
+          setIsSubmitting={setIsSubmitting}
+        />
+      </motion.div>
     );
   }
 
   if (location.pathname === '/career') {
-    return <CareerReadinessPage />;
+    return (
+      <motion.div
+        initial="initial"
+        animate="animate"
+        variants={pageVariants}
+        transition={pageVariants.transition}
+      >
+        <CareerReadinessPage />
+      </motion.div>
+    );
   }
 
   if (location.pathname === '/roadmap') {
-    return <RoadmapPage />;
+    return (
+      <motion.div
+        initial="initial"
+        animate="animate"
+        variants={pageVariants}
+        transition={pageVariants.transition}
+      >
+        <RoadmapPage />
+      </motion.div>
+    );
   }
 
-  return <DashboardPage />;
+  return (
+    <motion.div
+      initial="initial"
+      animate="animate"
+      variants={pageVariants}
+      transition={pageVariants.transition}
+    >
+      <DashboardPage />
+    </motion.div>
+  );
 }
 
 // ============================================================
@@ -168,7 +214,7 @@ function App() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl">
-                  <SparklesIcon className="w-6 h-6 text-white" />
+                  <Sparkles className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400">
@@ -181,8 +227,8 @@ function App() {
                 <UserInfo />
                 <Navigation />
                 <ThemeToggle />
-                <span className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium rounded-full">
-                  🟢 Live
+                <span className="flex items-center gap-1.5 px-3 py-1 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 text-xs font-bold rounded-full border border-green-100 dark:border-green-900/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Live
                 </span>
               </div>
             </div>

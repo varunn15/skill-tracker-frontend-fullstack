@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import api, { loginUser, registerUser, logoutUser, getCurrentUser } from '../services/api';
@@ -64,7 +65,7 @@ export const AuthProvider = ({ children }) => {
       setToken(accessToken);
       setUser(user);
       
-      toast.success(`✅ Welcome back, ${user.username}!`);
+      toast.success(`Welcome back, ${user.username}!`);
       return { success: true };
     } catch (error) {
       toast.error(error.response?.data?.message || 'Login failed');
@@ -83,7 +84,7 @@ export const AuthProvider = ({ children }) => {
       setToken(accessToken);
       setUser(user);
       
-      toast.success(`✅ Welcome ${user.username}! Account created successfully.`);
+      toast.success(`Welcome ${user.username}! Account created successfully.`);
       return { success: true };
     } catch (error) {
       toast.error(error.response?.data?.message || 'Registration failed');
@@ -104,7 +105,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     delete api.defaults.headers.common['Authorization'];
-    toast.info('👋 Logged out successfully');
+    toast.info('Logged out successfully');
   };
 
   const value = {
