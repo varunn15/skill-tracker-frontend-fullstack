@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
 
       try {
         const response = await getCurrentUser();
-        setUser(response.data.user);
+        setUser(response.data.user || response.data);
       } catch (error) {
         console.error('Failed to load user:', error);
         localStorage.removeItem('accessToken');

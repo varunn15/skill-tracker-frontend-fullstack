@@ -5,28 +5,63 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
 
-  darkMode: 'class',
+  darkMode: "class",
 
   theme: {
     extend: {
       colors: {
-        // 🎯 Brand Colors
-        primary: "#6366f1",     // Indigo
+        // ✅ SHADCN SYSTEM (REQUIRED)
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+        },
+
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+
+        // 🎯 YOUR CUSTOM COLORS (kept)
         primaryHover: "#4f46e5",
 
-        secondary: "#22c55e",   // Green
-        danger: "#ef4444",      // Red
+        darkBg: "#0f172a",
+        darkCard: "#1e293b",
+        darkBorder: "#334155",
 
-        // 🌙 Dark Mode System
-        darkBg: "#0f172a",      // Main background (slate-900)
-        darkCard: "#1e293b",    // Card background (slate-800)
-        darkBorder: "#334155",  // Borders (slate-700)
+        textMain: "#e2e8f0",
+        textMuted: "#94a3b8",
 
-        // 📝 Text Colors
-        textMain: "#e2e8f0",    // Main text (slate-200)
-        textMuted: "#94a3b8",   // Muted text (slate-400)
-
-        // ☀️ Light Mode Helpers (optional but useful)
         lightBg: "#f8fafc",
         lightCard: "#ffffff",
       },
@@ -34,6 +69,9 @@ module.exports = {
       borderRadius: {
         xl: "12px",
         "2xl": "16px",
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
 
       boxShadow: {

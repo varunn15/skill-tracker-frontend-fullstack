@@ -11,22 +11,53 @@ const API = axios.create({
   timeout: 60000,
 });
 
-// Request interceptor
+// Request interceptor - Add auth token
 API.interceptors.request.use(
   (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     console.log(`📤 ${config.method.toUpperCase()} ${config.url}`);
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor
+// Response interceptor - Handle token refresh
 API.interceptors.response.use(
   (response) => {
     console.log(`📥 ${response.status} ${response.config.url}`);
     return response;
   },
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // If error is 401 and we haven't tried to refresh yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+          const response = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+          const { accessToken, refreshToken: newRefreshToken } = response.data;
+          
+          localStorage.setItem('accessToken', accessToken);
+          localStorage.setItem('refreshToken', newRefreshToken);
+          
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          return API(originalRequest);
+        }
+      } catch (refreshError) {
+        // Refresh failed - redirect to login
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+    
     let errorMessage = "Something went wrong. Please try again.";
     
     if (error.response) {
@@ -34,11 +65,6 @@ API.interceptors.response.use(
                      error.response.data?.error || 
                      error.response.statusText ||
                      errorMessage;
-      
-      if (error.response.status === 400 || error.response.status === 500) {
-        error.userMessage = errorMessage;
-        return Promise.reject(error);
-      }
     } else if (error.request) {
       if (!navigator.onLine) {
         errorMessage = "You are offline. Please check your connection.";
@@ -47,14 +73,17 @@ API.interceptors.response.use(
       }
     }
     
-    if (error.response?.status !== 400 && error.response?.status !== 500) {
-      toast.error(`❌ ${errorMessage}`);
-    }
-    
+    toast.error(`❌ ${errorMessage}`);
     error.userMessage = errorMessage;
     return Promise.reject(error);
   }
 );
+
+// ========== AUTH APIs ==========
+export const loginUser = (data) => API.post('/auth/login', data);
+export const registerUser = (data) => API.post('/auth/register', data);
+export const logoutUser = () => API.post('/auth/logout');
+export const getCurrentUser = () => API.get('/auth/me');
 
 // ========== SKILL APIs ==========
 export const getSkills = () => API.get('/skills');
