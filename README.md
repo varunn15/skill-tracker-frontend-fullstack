@@ -144,37 +144,28 @@ npm start
 
 [![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)](https://skill-tracker-frontend-fullstack-git-main-varunn15-o-projects.vercel.app)
 
-> 🔗 **Live URL:** [https://skill-tracker-frontend-fullstack-git-main-varunn15-o-projects.vercel.app](https://skill-tracker-frontend-fullstack-git-main-varunn15-o-projects.vercel.app)
+> 🔗 **Live URL:** [https://your-project-name.vercel.app](https://your-project-name.vercel.app)
 
 ---
 
 ## 📸 Screenshots
 
-### 🔐 Authentication
+> 🖼️ *Coming soon — add your screenshots below*
 
-| Login | Signup |
-|-------|--------|
-| ![Login](https://github.com/user-attachments/assets/115ed876-770a-4e6d-b4be-4b0422faaea9) | ![Signup](https://github.com/user-attachments/assets/786f2ea4-af4c-4591-9d3e-0681ac4a4d4b) |
-
+<!-- Uncomment and update the paths once you have screenshots -->
+<!--
 ### 🏠 Dashboard
-
-![Dashboard](https://github.com/user-attachments/assets/2ff295bd-c781-4d68-909e-0d209868b137)
+![Dashboard](screenshots/dashboard.png)
 
 ### 📊 Skill Analysis
-
-![Skill Analysis](https://github.com/user-attachments/assets/296ce7bb-9927-4dc6-900d-e89817d31d1f)
+![Skill Analysis](screenshots/skill-analysis.png)
 
 ### 🎯 Career Readiness
-
-| Readiness Score | Strength & Weakness | AI Recommendation |
-|-----------------|---------------------|-------------------|
-| ![Career Readiness](https://github.com/user-attachments/assets/1a6d106b-17cb-4ddf-9974-52b1b0f828bf) | ![Strength & Weakness](https://github.com/user-attachments/assets/ab0b9a2e-1a6c-467b-bed4-f3e563b9813f) | ![AI Recommendation](https://github.com/user-attachments/assets/ad3b689d-4997-4272-b57a-e0d019fef2de) |
+![Career Readiness](screenshots/career-readiness.png)
 
 ### 🧠 AI Roadmap
-
-| Roadmap | Progress Tracking |
-|---------|-------------------|
-| ![AI Roadmap](https://github.com/user-attachments/assets/ff947ca2-96ad-498d-8ac0-d78308a4c9a6) | ![Progress Tracking](https://github.com/user-attachments/assets/7700bcfa-cb5b-4365-8ddb-63e8b8edb426) |
+![AI Roadmap](screenshots/ai-roadmap.png)
+-->
 
 ---
 
@@ -220,8 +211,9 @@ MIT License — feel free to use, modify, and build on top of it.
 
 ## 📬 Contact
 
-* 💼 [LinkedIn](https://www.linkedin.com/in/varun-kumar07/)
-* 📧 Email: varunkumaryt54@gmail.com
+* 💼 [LinkedIn](https://linkedin.com/in/yourprofile)
+* 📧 Email: your.email@example.com
+* 🌐 Portfolio: [yourportfolio.com](https://yourportfolio.com)
 
 ---
 
